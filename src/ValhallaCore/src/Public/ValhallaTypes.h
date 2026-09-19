@@ -15,12 +15,6 @@ namespace Valhalla {
 		Private
 	};
 
-	// Bit-flag traits split by concern per spec §2.5/§2.6 - a field/method's
-	// LangTraits describe real C++ semantics Gen must validate against the
-	// declaration (e.g. Static must actually be static); ReflectTraits describe
-	// reflection-layer-only behavior with no C++ equivalent to check; ToolTraits
-	// are purely advisory metadata for external tooling, never validated.
-
 	enum class LangTraits : uint32_t {
 		None       = 0,
 		Static     = 1u << 0,
@@ -74,8 +68,6 @@ namespace Valhalla {
 		return (v_Value & v_Flag) == v_Flag;
 	}
 
-	// §2.7 operator table - arithmetic, compound-assignment, comparison, logical,
-	// bitwise, bitwise-assignment, and "other".
 	enum class OperatorKind : uint8_t {
 		Add, Sub, Mul, Div, Mod,
 		AddAssign, SubAssign, MulAssign, DivAssign, ModAssign,

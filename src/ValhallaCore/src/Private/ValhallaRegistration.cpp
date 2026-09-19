@@ -1,24 +1,20 @@
 #include "ValhallaRegistration.h"
 #include "ValhallaPrimitiveTypes.h"
+#include "ValhallaRegistry.h"
 
 namespace Valhalla {
 
 	namespace {
-		// Constant-initialized (nullptr), never itself an object with static-init
-		// ordering concerns - only ever pointer-swapped, never read before Init().
 		RegistrationNode* s_Head = nullptr;
 		bool s_Initialized = false;
 
 		void registerPrimitives(RegistrationHook p_Hook) {
 			for (size_t i = 0; i < kPrimitiveTypeCount; ++i) {
+				RegisterType(kPrimitivesModuleHash, kPrimitiveTypes[i]);
 				if (p_Hook) p_Hook(kPrimitiveTypes[i]);
 			}
 		}
 
-		// ValhallaCore's own first registrant, proving the pattern works before
-		// Valhalla-Gen exists to emit the equivalent per-module node. This
-		// constructor runs at static-init time, in whatever order the linker
-		// picks - fine, since all it does is push onto s_Head.
 		struct PrimitiveRegistration {
 			RegistrationNode m_Node{ nullptr, &registerPrimitives };
 			PrimitiveRegistration() { pushRegistration(&m_Node); }

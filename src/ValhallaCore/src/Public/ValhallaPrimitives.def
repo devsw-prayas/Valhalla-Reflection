@@ -1,10 +1,3 @@
-// Per addendum v1.1 §A.1: primitives are declared once here, not annotated
-// with VALHALLA_TYPE. Consumed two ways - X-macro-expanded by the C++ side
-// (ValhallaPrimitiveTypes.h) and regex-scanned as PLAIN TEXT by Gen's C# side
-// (not yet implemented). Keep this file exactly this simple: one
-// VALHALLA_PRIMITIVE(name) invocation per line, no conditionals, no comments
-// on the same line as an invocation, no macro nesting - the C# side does not
-// parse C++, it pattern-matches this file's literal text.
 #ifndef VALHALLA_PRIMITIVE
 #define VALHALLA_PRIMITIVE(name)
 #endif

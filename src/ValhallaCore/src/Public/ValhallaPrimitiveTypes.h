@@ -29,14 +29,13 @@ namespace Valhalla {
 	};
 #include "ValhallaPrimitives.def"
 
-	// Flat table of every primitive TypeDescriptor - Commit 3's registration
-	// walks this to register the primitive set as ValhallaCore's own first
-	// RegistrationNode, without needing Gen to exist.
 	inline constexpr const TypeDescriptor* kPrimitiveTypes[] = {
 #define VALHALLA_PRIMITIVE(name) &kType_##name,
 #include "ValhallaPrimitives.def"
 	};
 
 	inline constexpr size_t kPrimitiveTypeCount = sizeof(kPrimitiveTypes) / sizeof(kPrimitiveTypes[0]);
+
+	inline constexpr uint64_t kPrimitivesModuleHash = fnv1a("Valhalla.Primitives");
 
 }
