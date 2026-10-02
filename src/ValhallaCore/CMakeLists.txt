@@ -8,16 +8,31 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE ValhallaCore_HEADERS  CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Public/*.h")
 file(GLOB_RECURSE ValhallaCore_SOURCE   CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Private/*.cpp")
 file(GLOB_RECURSE ValhallaCore_INL      CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Public/*.inl")
+file(GLOB_RECURSE ValhallaCore_DEF      CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/Public/*.def")
+# X-macro tables, not linker module-definition files.
+set_source_files_properties(${ValhallaCore_DEF} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_library(ValhallaCore SHARED
     ${ValhallaCore_HEADERS}
     ${ValhallaCore_SOURCE}
     ${ValhallaCore_INL}
+    ${ValhallaCore_DEF}
 )
 target_compile_definitions(ValhallaCore PRIVATE ValhallaCore_EXPORTS)
 target_include_directories(ValhallaCore PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Public
 )
+
+set(VALHALLA_MAX_PARAMS 16 CACHE STRING "Maximum reflected method parameter count")
+set(VALHALLA_ENABLE_ASSERT AUTO CACHE STRING "Runtime Invoke asserts: ON, OFF or AUTO (debug builds only)")
+set_property(CACHE VALHALLA_ENABLE_ASSERT PROPERTY STRINGS AUTO ON OFF)
+
+target_compile_definitions(ValhallaCore PUBLIC VALHALLA_MAX_PARAMS=${VALHALLA_MAX_PARAMS})
+if(VALHALLA_ENABLE_ASSERT STREQUAL "ON")
+    target_compile_definitions(ValhallaCore PUBLIC VALHALLA_ENABLE_ASSERT=1)
+elseif(VALHALLA_ENABLE_ASSERT STREQUAL "OFF")
+    target_compile_definitions(ValhallaCore PUBLIC VALHALLA_ENABLE_ASSERT=0)
+endif()
 
 target_precompile_headers(ValhallaCore PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/Public/ValhallaCore.h)
 

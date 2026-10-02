@@ -9,7 +9,11 @@
 #define VALHALLA_BUILD_RELEASE 1
 #endif
 
-#if VALHALLA_BUILD_DEBUG
+#ifndef VALHALLA_ENABLE_ASSERT
+#define VALHALLA_ENABLE_ASSERT VALHALLA_BUILD_DEBUG
+#endif
+
+#if VALHALLA_ENABLE_ASSERT
 
 #define VALHALLA_ASSERT(expr)                                     \
         do {                                                   \

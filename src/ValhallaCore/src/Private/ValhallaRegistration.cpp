@@ -1,6 +1,5 @@
 #include "ValhallaRegistration.h"
 #include "ValhallaPrimitiveTypes.h"
-#include "ValhallaRegistry.h"
 
 namespace Valhalla {
 
@@ -8,18 +7,38 @@ namespace Valhalla {
 		RegistrationNode* s_Head = nullptr;
 		bool s_Initialized = false;
 
-		void registerPrimitives(RegistrationHook p_Hook) {
-			for (size_t i = 0; i < kPrimitiveTypeCount; ++i) {
-				RegisterType(kPrimitivesModuleHash, kPrimitiveTypes[i]);
-				if (p_Hook) p_Hook(kPrimitiveTypes[i]);
+		constexpr uint64_t kPrimitiveKeys[] = {
+#define VALHALLA_PRIMITIVE(name) fnv1a(#name),
+#include "ValhallaPrimitives.def"
+		};
+
+		constexpr auto kPrimitiveChd = Chd::build(kPrimitiveKeys);
+		VALHALLA_STATIC_ASSERT(kPrimitiveChd.m_Ok, "Primitive CHD table failed to build");
+
+		constexpr auto kPrimitiveSlots = [] {
+			struct Slots { const TypeDescriptor* m_Types[kPrimitiveTypeCount * 2]; } slots{};
+			for (uint32_t s = 0; s < kPrimitiveChd.m_SlotCount; ++s) {
+				const uint32_t key = kPrimitiveChd.m_SlotToKey[s];
+				slots.m_Types[s] = key == Chd::kEmptySlot ? nullptr : kPrimitiveTypes[key];
 			}
+			return slots;
+		}();
+
+		constexpr ModuleRegistry kPrimitiveModule = {
+			.m_Name = "Valhalla.Primitives",
+			.m_DllHash = kPrimitivesModuleHash,
+			.m_BucketCount = kPrimitiveChd.m_BucketCount,
+			.m_SlotCount = kPrimitiveChd.m_SlotCount,
+			.m_Displacements = kPrimitiveChd.m_Displacements,
+			.m_Slots = kPrimitiveSlots.m_Types,
+			.m_TypeCount = static_cast<uint32_t>(kPrimitiveTypeCount),
+		};
+
+		void registerPrimitives(RegistrationHook p_Hook) {
+			RegisterModule(&kPrimitiveModule, p_Hook);
 		}
 
-		struct PrimitiveRegistration {
-			RegistrationNode m_Node{ nullptr, &registerPrimitives };
-			PrimitiveRegistration() { pushRegistration(&m_Node); }
-		};
-		const PrimitiveRegistration s_PrimitiveRegistration;
+		const AutoRegistration s_PrimitiveRegistration(&registerPrimitives);
 	}
 
 	void pushRegistration(RegistrationNode* p_Node) {
@@ -34,6 +53,10 @@ namespace Valhalla {
 		for (RegistrationNode* node = s_Head; node != nullptr; node = node->m_Next) {
 			node->m_RegisterAll(p_Hook);
 		}
+	}
+
+	bool IsInitialized() {
+		return s_Initialized;
 	}
 
 }

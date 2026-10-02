@@ -3,8 +3,10 @@ find_program(DOTNET_EXECUTABLE dotnet REQUIRED)
 set(VALHALLAGEN_CSPROJ ${CMAKE_CURRENT_SOURCE_DIR}/ValhallaGen.csproj)
 set(VALHALLAGEN_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/Release)
 set(VALHALLAGEN_DLL ${VALHALLAGEN_OUTPUT_DIR}/ValhallaGen.dll)
+set(VALHALLA_PRIMITIVES_DEF ${CMAKE_CURRENT_SOURCE_DIR}/../ValhallaCore/src/Public/ValhallaPrimitives.def)
 
 file(GLOB_RECURSE VALHALLAGEN_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cs")
+list(FILTER VALHALLAGEN_SOURCES EXCLUDE REGEX "/(bin|obj)/")
 
 add_custom_command(
     OUTPUT ${VALHALLAGEN_DLL}
@@ -17,17 +19,14 @@ add_custom_command(
 
 add_custom_target(Valhalla-Gen ALL DEPENDS ${VALHALLAGEN_DLL})
 
-set(VALHALLA_CODEGEN_STAMP ${CMAKE_CURRENT_BINARY_DIR}/valhalla_codegen.stamp)
+set(VALHALLA_CODEGEN_ARGS --root ${CMAKE_SOURCE_DIR} --primitives ${VALHALLA_PRIMITIVES_DEF}
+    --registered ${CMAKE_BINARY_DIR}/ValhallaRegisteredModules.txt)
 
-add_custom_command(
-    OUTPUT ${VALHALLA_CODEGEN_STAMP}
-    COMMAND ${DOTNET_EXECUTABLE} ${VALHALLAGEN_DLL} --root ${CMAKE_SOURCE_DIR}
-    COMMAND ${CMAKE_COMMAND} -E touch ${VALHALLA_CODEGEN_STAMP}
-    DEPENDS ${VALHALLAGEN_DLL}
+# No OUTPUT: runs every build; Gen only rewrites files whose content changed.
+add_custom_target(ValhallaCodegen ALL
+    COMMAND ${DOTNET_EXECUTABLE} ${VALHALLAGEN_DLL} ${VALHALLA_CODEGEN_ARGS}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running Valhalla-Gen codegen"
     VERBATIM
 )
-
-add_custom_target(ValhallaCodegen ALL DEPENDS ${VALHALLA_CODEGEN_STAMP})
 add_dependencies(ValhallaCodegen Valhalla-Gen)

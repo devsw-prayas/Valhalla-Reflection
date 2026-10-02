@@ -6,7 +6,8 @@ namespace Valhalla {
 	enum class ObjectType : uint8_t {
 		Class,
 		Struct,
-		Primitive
+		Primitive,
+		Enum
 	};
 
 	enum class Visibility : uint8_t {

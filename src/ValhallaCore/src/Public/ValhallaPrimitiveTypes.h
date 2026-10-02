@@ -3,9 +3,11 @@
 #include "ValhallaTypes.h"
 #include "ValhallaDescriptors.h"
 #include "ValhallaHash.h"
+#include "ValhallaRegistry.h"
 
 namespace Valhalla {
 
+	// Inline constexpr: every DLL gets its own copy, so compare primitive descriptors by m_Hash, never by address.
 #define VALHALLA_PRIMITIVE(name) \
 	inline constexpr TypeDescriptor kType_##name = { \
 		.m_Name = #name, \
@@ -25,6 +27,8 @@ namespace Valhalla {
 		.m_OperatorCount = 0, \
 		.m_Constructors = nullptr, \
 		.m_ConstructorCount = 0, \
+		.m_EnumValues = nullptr, \
+		.m_EnumValueCount = 0, \
 		.m_Destructor = nullptr \
 	};
 #include "ValhallaPrimitives.def"
