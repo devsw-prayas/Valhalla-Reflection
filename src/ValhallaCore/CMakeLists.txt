@@ -32,6 +32,15 @@ set(VALHALLA_MAX_PARAMS 16 CACHE STRING "Maximum reflected method parameter coun
 set(VALHALLA_ENABLE_ASSERT AUTO CACHE STRING "Runtime Invoke asserts: ON, OFF or AUTO (debug builds only)")
 set_property(CACHE VALHALLA_ENABLE_ASSERT PROPERTY STRINGS AUTO ON OFF)
 
+# AUTO follows _DEBUG (set by the debug CRT); ON/OFF pin it. Valhalla-scoped, so it never collides with a host's DEBUG.
+set(VALHALLA_ENABLE_DEBUG_CHECKS AUTO CACHE STRING "Valhalla asserts: AUTO (follow _DEBUG), ON or OFF")
+set_property(CACHE VALHALLA_ENABLE_DEBUG_CHECKS PROPERTY STRINGS AUTO ON OFF)
+if (VALHALLA_ENABLE_DEBUG_CHECKS STREQUAL "ON")
+    target_compile_definitions(ValhallaCore PUBLIC VALHALLA_DEBUG_CHECKS=1)
+elseif (VALHALLA_ENABLE_DEBUG_CHECKS STREQUAL "OFF")
+    target_compile_definitions(ValhallaCore PUBLIC VALHALLA_DEBUG_CHECKS=0)
+endif()
+
 target_compile_definitions(ValhallaCore PUBLIC VALHALLA_MAX_PARAMS=${VALHALLA_MAX_PARAMS})
 if(VALHALLA_ENABLE_ASSERT STREQUAL "ON")
     target_compile_definitions(ValhallaCore PUBLIC VALHALLA_ENABLE_ASSERT=1)
